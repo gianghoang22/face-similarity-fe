@@ -1,6 +1,6 @@
 // src/api/api.js
 
-const BASE_URL = "http://localhost:3000"
+const BASE_URL = import.meta.env.VITE_BASE_URL
 
 export async function compareFaces(image1, image2) {
   const formData = new FormData()
