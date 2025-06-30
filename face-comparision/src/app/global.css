@@ -1,0 +1,80 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --radius: 0.5rem;
+
+  /* ⚪️ Giao diện nền sáng */
+  --background: 220 20% 98%;
+  --foreground: 220 15% 18%;
+
+  --card: 220 20% 97%;
+  --card-foreground: 220 15% 18%;
+
+  --popover: 220 20% 98%;
+  --popover-foreground: 220 15% 18%;
+
+  /* 🔵 Màu chính (Primary) – xanh công nghệ */
+  --primary: 222 60% 52%;
+  --primary-foreground: 0 0% 100%;
+
+  /* 🔹 Màu phụ (Secondary) – xanh nhẹ hơn */
+  --secondary: 220 15% 92%;
+  --secondary-foreground: 222 40% 30%;
+
+  /* 🔴 Màu cảnh báo */
+  --destructive: 4 70% 58%;
+  --destructive-foreground: 0 0% 100%;
+
+  /* 🧊 Màu trung tính dịu nhẹ */
+  --muted: 220 16% 94%;
+  --muted-foreground: 220 10% 40%;
+
+  /* 🌟 Màu nhấn phụ */
+  --accent: 260 12% 92%;
+  --accent-foreground: 260 40% 35%;
+
+  /* ⚫️ Đường viền */
+  --border: 220 12% 85%;
+  --input: 220 16% 97%;
+  --ring: 222 60% 70%;
+
+  /* 📊 Màu biểu đồ */
+  --chart-1: 222 60% 52%;
+  --chart-2: 260 40% 60%;
+  --chart-3: 290 40% 65%;
+  --chart-4: 20 70% 60%;
+  --chart-5: 45 80% 65%;
+}
+
+/* 🌙 Giao diện nền tối */
+.dark {
+  --background: 220 15% 12%;
+  --foreground: 220 30% 92%;
+
+  --card: 220 15% 16%;
+  --card-foreground: 220 30% 92%;
+
+  --popover: 220 15% 16%;
+  --popover-foreground: 220 30% 92%;
+
+  --primary: 222 60% 60%;
+  --primary-foreground: 0 0% 100%;
+
+  --secondary: 220 10% 22%;
+  --secondary-foreground: 222 30% 85%;
+
+  --muted: 220 10% 20%;
+  --muted-foreground: 220 20% 70%;
+
+  --accent: 260 10% 22%;
+  --accent-foreground: 260 40% 85%;
+
+  --destructive: 4 60% 55%;
+  --destructive-foreground: 0 0% 100%;
+
+  --border: 220 10% 30%;
+  --input: 220 10% 25%;
+  --ring: 222 60% 70%;
+}
