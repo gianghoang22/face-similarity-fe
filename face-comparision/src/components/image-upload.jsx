@@ -5,7 +5,7 @@ import { Upload, X, ImageIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 
-export default function ImageUpload({ onImageUpload, uploadedImage, placeholder }) {
+export default function ImageUpload({ onImageUpload, onRemoveImage, uploadedImage, placeholder }) {
   const fileInputRef = useRef(null)
   const [dragActive, setDragActive] = useState(false)
   const [error, setError] = useState(null)
@@ -59,10 +59,14 @@ export default function ImageUpload({ onImageUpload, uploadedImage, placeholder 
   }
 
   const removeImage = () => {
-    if (uploadedImage) {
+    if (uploadedImage?.preview) {
       URL.revokeObjectURL(uploadedImage.preview)
     }
-    onImageUpload(new File([], "")) // Reset with empty file
+
+    if (typeof onRemoveImage === "function") {
+      onRemoveImage()
+    }
+
     if (fileInputRef.current) {
       fileInputRef.current.value = ""
     }
@@ -137,15 +141,27 @@ export default function ImageUpload({ onImageUpload, uploadedImage, placeholder 
               style={{ height: "auto", maxHeight: "400px" }}
             />
             <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-10 transition-all duration-200 flex items-center justify-center opacity-0 hover:opacity-100">
-              <Button variant="destructive" size="sm" onClick={removeImage} className="absolute top-2 right-2">
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={removeImage}
+                className="absolute top-2 right-2"
+              >
                 <X className="h-4 w-4" />
               </Button>
             </div>
           </div>
 
           <div className="mt-2 text-sm text-gray-600">
-            <p className="font-medium">{uploadedImage.file.name}</p>
-            <p>{(uploadedImage.file.size / 1024 / 1024).toFixed(2)} MB</p>
+            <p className="font-medium">{uploadedImage.file?.name}</p>
+            <p className="text-xs text-gray-500"></p>
+            <p>
+              {uploadedImage?.file
+                ? `${(uploadedImage.file.size / 1024 / 1024).toFixed(2)} MB`
+                : uploadedImage?.size
+                ? `${(uploadedImage.size / 1024 / 1024).toFixed(2)} MB`
+                : "Không rõ dung lượng"}
+            </p>
           </div>
         </div>
       )}
