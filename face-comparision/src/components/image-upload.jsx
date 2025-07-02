@@ -1,14 +1,16 @@
 "use client"
 
 import React, { useRef, useState } from "react"
-import { Upload, X, ImageIcon } from "lucide-react"
+import { Upload, X, ImageIcon, Camera as CameraIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import CameraCapture from "@/components/camera-capture"
 
-export default function ImageUpload({ onImageUpload, onRemoveImage, uploadedImage, placeholder }) {
+export default function ImageUpload({ onImageUpload, uploadedImage, placeholder, onRemoveImage }) {
   const fileInputRef = useRef(null)
   const [dragActive, setDragActive] = useState(false)
   const [error, setError] = useState(null)
+  const [showCamera, setShowCamera] = useState(false)
 
   const validateFile = (file) => {
     const validTypes = ["image/png", "image/jpg", "image/jpeg"]
@@ -30,7 +32,6 @@ export default function ImageUpload({ onImageUpload, onRemoveImage, uploadedImag
 
   const handleFiles = (files) => {
     if (!files || files.length === 0) return
-
     const file = files[0]
     if (validateFile(file)) {
       onImageUpload(file)
@@ -40,11 +41,8 @@ export default function ImageUpload({ onImageUpload, onRemoveImage, uploadedImag
   const handleDrag = (e) => {
     e.preventDefault()
     e.stopPropagation()
-    if (e.type === "dragenter" || e.type === "dragover") {
-      setDragActive(true)
-    } else if (e.type === "dragleave") {
-      setDragActive(false)
-    }
+    if (e.type === "dragenter" || e.type === "dragover") setDragActive(true)
+    else if (e.type === "dragleave") setDragActive(false)
   }
 
   const handleDrop = (e) => {
@@ -59,22 +57,24 @@ export default function ImageUpload({ onImageUpload, onRemoveImage, uploadedImag
   }
 
   const removeImage = () => {
-    if (uploadedImage?.preview) {
-      URL.revokeObjectURL(uploadedImage.preview)
-    }
-
-    if (typeof onRemoveImage === "function") {
-      onRemoveImage()
-    }
-
-    if (fileInputRef.current) {
-      fileInputRef.current.value = ""
-    }
+    if (uploadedImage?.preview) URL.revokeObjectURL(uploadedImage.preview)
+    if (typeof onRemoveImage === "function") onRemoveImage()
+    if (fileInputRef.current) fileInputRef.current.value = ""
   }
+
+  console.log("showCamera:", showCamera, "uploadedImage:", uploadedImage);
 
   return (
     <div className="space-y-4">
-      {!uploadedImage ? (
+      {showCamera ? (
+        <CameraCapture
+          onCapture={(file) => {
+            setShowCamera(false)
+            onImageUpload(file)
+          }}
+          onCancel={() => setShowCamera(false)}
+        />
+      ) : !uploadedImage ? (
         <div
           className={`relative border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
             dragActive ? "border-blue-500 bg-blue-50" : "border-gray-300 hover:border-gray-400"
@@ -84,15 +84,21 @@ export default function ImageUpload({ onImageUpload, onRemoveImage, uploadedImag
           onDragOver={handleDrag}
           onDrop={handleDrop}
         >
+          {/* Chỉ phủ input lên vùng drag & drop */}
+          <div
+            className="absolute inset-0 w-full h-full"
+            style={{ zIndex: 10 }}
+            onClick={() => fileInputRef.current?.click()}
+          />
           <input
             ref={fileInputRef}
             type="file"
             accept="image/png,image/jpg,image/jpeg"
             onChange={handleInputChange}
-            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+            className="hidden"
           />
 
-          <div className="space-y-4">
+          <div className="space-y-4 relative z-20">
             <div className="mx-auto w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center">
               <Upload className="h-6 w-6 text-gray-600" />
             </div>
@@ -111,19 +117,9 @@ export default function ImageUpload({ onImageUpload, onRemoveImage, uploadedImag
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => {
-                  const input = document.createElement("input")
-                  input.type = "file"
-                  input.accept = "image/*"
-                  input.capture = "environment"
-                  input.onchange = (e) => {
-                    const target = e.target
-                    handleFiles(target.files)
-                  }
-                  input.click()
-                }}
+                onClick={() => setShowCamera(true)}
               >
-                <Upload className="h-4 w-4 mr-2" />
+                <CameraIcon className="h-4 w-4 mr-2" />
                 Chụp ảnh
               </Button>
             </div>
@@ -141,12 +137,7 @@ export default function ImageUpload({ onImageUpload, onRemoveImage, uploadedImag
               style={{ height: "auto", maxHeight: "400px" }}
             />
             <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-10 transition-all duration-200 flex items-center justify-center opacity-0 hover:opacity-100">
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={removeImage}
-                className="absolute top-2 right-2"
-              >
+              <Button variant="destructive" size="sm" onClick={removeImage} className="absolute top-2 right-2">
                 <X className="h-4 w-4" />
               </Button>
             </div>
@@ -154,7 +145,6 @@ export default function ImageUpload({ onImageUpload, onRemoveImage, uploadedImag
 
           <div className="mt-2 text-sm text-gray-600">
             <p className="font-medium">{uploadedImage.file?.name}</p>
-            <p className="text-xs text-gray-500"></p>
             <p>
               {uploadedImage?.file
                 ? `${(uploadedImage.file.size / 1024 / 1024).toFixed(2)} MB`
@@ -172,5 +162,18 @@ export default function ImageUpload({ onImageUpload, onRemoveImage, uploadedImag
         </Alert>
       )}
     </div>
+  )
+}
+
+const ParentComponent = () => {
+  const [uploadedImage, setUploadedImage] = useState(null)
+
+  return (
+    <ImageUpload
+      uploadedImage={uploadedImage}
+      onImageUpload={file => setUploadedImage({ file, preview: URL.createObjectURL(file) })}
+      onRemoveImage={() => setUploadedImage(null)}
+      placeholder="Tải lên hình ảnh của bạn"
+    />
   )
 }
