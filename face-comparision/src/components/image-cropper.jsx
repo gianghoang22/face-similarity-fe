@@ -1,37 +1,42 @@
-// components/ImageCropper.js
+// components/image-cropper.jsx
 "use client"
 
-import Cropper from "react-easy-crop"
-import { useState, useCallback } from "react"
+import "../styles/cropper.css"
+import { useRef } from "react"
 import { Button } from "@/components/ui/button"
-import getCroppedImg from "@/utils/cropImage"
+import Cropper from "react-cropper"
 
 export default function ImageCropper({ imageSrc, onCropComplete, onCancel }) {
-  const [crop, setCrop] = useState({ x: 0, y: 0 })
-  const [zoom, setZoom] = useState(1)
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState(null)
+  const cropperRef = useRef(null)
 
-  const handleCropComplete = useCallback((_, croppedPixels) => {
-    setCroppedAreaPixels(croppedPixels)
-  }, [])
-
-  const handleDone = async () => {
-    const croppedImage = await getCroppedImg(imageSrc, croppedAreaPixels)
-    onCropComplete(croppedImage)
+  const handleDone = () => {
+    const cropper = cropperRef.current.cropper
+    cropper.getCroppedCanvas().toBlob((blob) => {
+      if (blob) {
+        const file = new File([blob], `cropped-${Date.now()}.jpg`, { type: blob.type })
+        onCropComplete(file)
+      }
+    }, "image/jpeg")
   }
 
   return (
-    <div className="relative w-full h-[400px] bg-black rounded-lg overflow-hidden">
-      <Cropper
-        image={imageSrc}
-        crop={crop}
-        zoom={zoom}
-        aspect={1}
-        onCropChange={setCrop}
-        onZoomChange={setZoom}
-        onCropComplete={handleCropComplete}
-      />
-      <div className="absolute bottom-4 left-4 flex gap-2">
+    <div className="space-y-4">
+      <div className="w-full max-h-[500px]">
+        <Cropper
+          src={imageSrc}
+          style={{ height: 400, width: "100%" }}
+          aspectRatio={NaN} // Cho phép resize tự do
+          guides={true}
+          ref={cropperRef}
+          viewMode={1}
+          dragMode="move"
+          cropBoxResizable={true}
+          cropBoxMovable={true}
+          responsive={true}
+          checkOrientation={false}
+        />
+      </div>
+      <div className="flex gap-2">
         <Button onClick={handleDone}>Cắt</Button>
         <Button variant="secondary" onClick={onCancel}>Huỷ</Button>
       </div>

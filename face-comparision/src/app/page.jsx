@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { Camera, Users, Zap, Shield, CheckCircle, Scissors } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -18,6 +18,7 @@ export default function FaceComparisonApp() {
 
   const [isComparing, setIsComparing] = useState(false)
   const [result, setResult] = useState(null)
+  const resultRef = useRef(null)
 
   const handleImageUpload = (imageNumber, file) => {
   if (!file) return;
@@ -74,6 +75,11 @@ const handleCropComplete2 = (croppedFile) => {
 
     if (response.success) {
       setResult(response.data)
+      setTimeout(() => {
+        if (resultRef.current) {
+          resultRef.current.scrollIntoView({ behavior: "smooth", block: "start" })
+        }
+      }, 500)
     } else {
       alert("Lỗi khi phân tích: " + response.error)
     }
@@ -110,14 +116,67 @@ const handleCropComplete2 = (croppedFile) => {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* GIỚI THIỆU */}
-        <div className="text-center mb-12">
+        <div className="text-center">
           <h2 className="text-3xl font-bold text-gray-900 mb-4">So sánh độ giống nhau giữa hai khuôn mặt</h2>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
             Sử dụng công nghệ AI tiên tiến để phân tích và so sánh độ tương đồng giữa hai khuôn mặt.
           </p>
         </div>
 
-        {/* ƯU ĐIỂM */}
+        {/* HƯỚNG DẪN + ƯU ĐIỂM */}
+<div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-12 mb-12">
+  {/* Card Hướng dẫn sử dụng */}
+  <Card className="p-6 flex flex-col h-full shadow-sm">
+    <CardHeader>
+      <CardTitle className="text-lg">Hướng dẫn sử dụng</CardTitle>
+      <CardDescription className="text-xs mt-1 text-gray-500">
+        Các bước để sử dụng hệ thống so sánh khuôn mặt
+      </CardDescription>
+    </CardHeader>
+    <CardContent className="pt-0 flex-1 flex flex-col justify-center">
+      <ol className="list-decimal list-inside space-y-2 text-base text-gray-700">
+        <li>Chọn hoặc chụp 2 ảnh khuôn mặt rõ nét.</li>
+        <li>Có thể crop lại ảnh nếu cần thiết.</li>
+        <li>Nhấn <span className="font-semibold">“So sánh khuôn mặt”</span>.</li>
+        <li>Chờ vài giây để hệ thống phân tích.</li>
+        <li>Kết quả sẽ hiển thị bên dưới.</li>
+      </ol>
+      <div className="mt-4 text-xs text-gray-400">
+        * Ảnh không được lưu hoặc gửi đi, đảm bảo bảo mật.
+      </div>
+    </CardContent>
+  </Card>
+
+  {/* Card Ưu điểm */}
+  <Card className="p-6 flex flex-col h-full shadow-sm">
+    <CardHeader>
+      <CardTitle className="text-lg">Ưu điểm nổi bật</CardTitle>
+      <CardDescription className="text-xs mt-1 text-gray-500">
+        Lý do nên sử dụng FaceMatch AI
+      </CardDescription>
+    </CardHeader>
+    <CardContent className="pt-0 flex-1 flex flex-col justify-center">
+      <div className="space-y-5">
+        {[
+          ["Nhanh chóng", Zap, "Phân tích chỉ trong vài giây."],
+          ["Bảo mật", Shield, "Xử lý cục bộ, không lưu server."],
+          ["Chính xác", CheckCircle, "Thuật toán AI độ chính xác trên 95%."]
+        ].map(([title, Icon, desc], i) => (
+          <div key={i} className="flex items-center gap-3">
+            <div className="bg-blue-100 p-2 rounded-full">
+              <Icon className="w-6 h-6 text-blue-600" />
+            </div>
+            <div>
+              <div className="font-medium text-base">{title}</div>
+              <div className="text-xs text-gray-500">{desc}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </CardContent>
+  </Card>
+</div>
+        {/* ƯU ĐIỂM
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
           {[["Nhanh chóng", Zap, "Phân tích chỉ vài giây"],
             ["Bảo mật", Shield, "Xử lý cục bộ, không lưu server"],
@@ -130,7 +189,7 @@ const handleCropComplete2 = (croppedFile) => {
                 <CardContent><p className="text-sm text-gray-600 text-center">{desc}</p></CardContent>
               </Card>
           ))}
-        </div>
+        </div> */}
 
         {/* UPLOAD + CROP */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
@@ -243,10 +302,9 @@ const handleCropComplete2 = (croppedFile) => {
           </Card>
         )}
 
-        {/* KẾT QUẢ */}
-        {result && <ComparisonResult result={result} />}
+        
 
-        {/* HƯỚNG DẪN */}
+        {/* HƯỚNG DẪN
         <Card className="mt-12">
           <CardHeader><CardTitle>Hướng dẫn sử dụng</CardTitle></CardHeader>
           <CardContent>
@@ -271,10 +329,21 @@ const handleCropComplete2 = (croppedFile) => {
               </div>
             </div>
           </CardContent>
-        </Card>
+        </Card> */}
+
+          {/* Card Kết quả */}
+  {result && (
+    <div ref={resultRef}>
+      <Card className="p-4">
+        <CardContent className="pt-0">
+          <ComparisonResult result={result} />
+        </CardContent>
+      </Card>
+    </div>
+  )}
       </main>
 
-      <footer className="bg-white border-t mt-16">
+      <footer className="bg-white border-t mt-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 text-center text-gray-600">
           <p>&copy; 2025 Microbox. Được phát triển bằng công nghệ AI tiên tiến.</p>
         </div>
