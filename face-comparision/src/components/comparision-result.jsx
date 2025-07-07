@@ -1,7 +1,15 @@
 "use client"
 
 import React from "react"
-import { CheckCircle, XCircle, Users, TrendingUp, Shield, Minus, Maximize2 } from "lucide-react"
+import {
+  CheckCircle,
+  XCircle,
+  Users,
+  TrendingUp,
+  Shield,
+  Minus,
+  Maximize2,
+} from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
@@ -21,12 +29,14 @@ export default function ComparisonResult({ result }) {
 
   const {
     similarity_percentage,
+    similarity,
+    distance,
     verified,
-    time,
-    model,
+    model_used,
   } = result
 
-  const similarity = similarity_percentage?.toFixed(2) ?? 0
+  const similarityValue = similarity_percentage ?? (similarity * 100) ?? 0
+  const similarityDisplay = Number(similarityValue).toFixed(2)
   const isRelated = verified
 
   const getResultColor = (percentage) => {
@@ -64,38 +74,45 @@ export default function ComparisonResult({ result }) {
 
   return (
     <div className="space-y-6">
-      {/* Thanh tiêu đề + nút minimize/maximize */}
       <div className="flex items-center justify-between mb-2">
         <span className="font-semibold text-base text-gray-700">Kết quả so sánh</span>
         <button
           className="p-2 rounded hover:bg-blue-100 transition"
+          onClick={() => setMinimized(!minimized)}
           aria-label={minimized ? "Mở rộng" : "Thu nhỏ"}
-          onClick={() => setMinimized((v) => !v)}
         >
           {minimized ? <Maximize2 className="w-5 h-5" /> : <Minus className="w-5 h-5" />}
         </button>
       </div>
-      {/* Card kết quả chính */}
+
       {!minimized && (
         <Card className="border-2 border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50 relative">
           <CardHeader className="text-center">
             <div className="mx-auto w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
               <Users className="h-8 w-8 text-blue-600" />
             </div>
-            {/* ĐÃ LOẠI BỎ CardTitle ở đây để tránh lặp tiêu đề */}
             <CardDescription>Độ tương đồng giữa hai khuôn mặt</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="text-center">
-              <div className={`text-5xl font-bold ${getResultColor(similarity)} mb-2`}>
-                {similarity}%
+              <div className={`text-5xl font-bold ${getResultColor(similarityDisplay)} mb-2`}>
+                {similarityDisplay}%
               </div>
-              <Progress value={similarity} className="w-full mt-2 h-3" />
+              <Progress value={similarityDisplay} className="w-full mt-2 h-3" />
+              <div className="text-sm text-gray-500 mt-2 space-y-1">
+                <div>
+                  Mô hình sử dụng: <Badge variant="outline">{model_used}</Badge>
+                </div>
+                {typeof distance !== "undefined" && (
+                  <div>
+                    Khoảng cách đặc trưng: <span className="font-semibold">{distance.toFixed(4)}</span>
+                  </div>
+                )}
+              </div>
               <div className="mt-3 flex justify-center">{getResultBadge(isRelated)}</div>
             </div>
-            {/* Kết luận & Phân tích chi tiết */}
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Kết luận */}
               <div className="bg-gray-50 rounded-lg p-4 border flex items-start">
                 {isRelated ? (
                   <CheckCircle className="h-5 w-5 mr-2 text-green-600 mt-1" />
@@ -109,16 +126,18 @@ export default function ComparisonResult({ result }) {
                   <p className="text-sm text-gray-600 mt-1">Mối quan hệ huyết thống tiềm năng</p>
                 </div>
               </div>
-              {/* Phân tích chi tiết */}
+
               <div className="bg-white rounded-lg p-4 border">
                 <h4 className="font-semibold mb-2 flex items-center">
                   <TrendingUp className="h-4 w-4 mr-2" />
                   Phân tích chi tiết
                 </h4>
-                <p className="text-gray-700 leading-relaxed">{getDetailedAnalysis(similarity)}</p>
+                <p className="text-gray-700 leading-relaxed">
+                  {getDetailedAnalysis(similarityDisplay)}
+                </p>
               </div>
             </div>
-            {/* Chi tiết kỹ thuật */}
+
             <div className="bg-white rounded-lg p-4 border mt-2">
               <h4 className="font-semibold mb-3 text-gray-800 text-base flex items-center">
                 <Shield className="h-4 w-4 mr-2 text-blue-400" />
@@ -135,7 +154,7 @@ export default function ComparisonResult({ result }) {
           </CardContent>
         </Card>
       )}
-      {/* Card lưu ý (full width dưới cùng) */}
+
       <Card className="border-yellow-200 bg-yellow-50">
         <CardContent>
           <div className="flex items-start space-x-3">

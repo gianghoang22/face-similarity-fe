@@ -15,63 +15,59 @@ export default function FaceComparisonApp() {
   const [image2, setImage2] = useState(null)
   const [isCropping1, setIsCropping1] = useState(false)
   const [isCropping2, setIsCropping2] = useState(false)
-
   const [isComparing, setIsComparing] = useState(false)
   const [result, setResult] = useState(null)
+  const [compareMethod, setCompareMethod] = useState("face")
   const resultRef = useRef(null)
 
   const handleImageUpload = (imageNumber, file) => {
-  if (!file) return;
+    if (!file) return
+    const preview = URL.createObjectURL(file)
+    const uploadedImage = { file, preview }
 
-  const preview = URL.createObjectURL(file);
-  const uploadedImage = { file, preview };
+    if (imageNumber === 1) {
+      if (image1?.preview) URL.revokeObjectURL(image1.preview)
+      setImage1(uploadedImage)
+    } else {
+      if (image2?.preview) URL.revokeObjectURL(image2.preview)
+      setImage2(uploadedImage)
+    }
 
-  if (imageNumber === 1) {
-    if (image1?.preview) URL.revokeObjectURL(image1.preview);
-    setImage1(uploadedImage);
-  } else {
-    if (image2?.preview) URL.revokeObjectURL(image2.preview);
-    setImage2(uploadedImage);
+    setResult(null)
   }
 
-  setResult(null);
-};
-
-const handleRemoveImage = (imageNumber) => {
-  if (imageNumber === 1) {
-    if (image1?.preview) URL.revokeObjectURL(image1.preview);
-    setImage1(null);
-    setIsCropping1(false);
-  } else {
-    if (image2?.preview) URL.revokeObjectURL(image2.preview);
-    setImage2(null);
-    setIsCropping2(false);
+  const handleRemoveImage = (imageNumber) => {
+    if (imageNumber === 1) {
+      if (image1?.preview) URL.revokeObjectURL(image1.preview)
+      setImage1(null)
+      setIsCropping1(false)
+    } else {
+      if (image2?.preview) URL.revokeObjectURL(image2.preview)
+      setImage2(null)
+      setIsCropping2(false)
+    }
   }
-};
-
-
 
   const handleCropComplete1 = (croppedFile) => {
-  if (image1?.preview) URL.revokeObjectURL(image1.preview)
-  const preview = URL.createObjectURL(croppedFile)
-  setImage1({ file: croppedFile, preview })
-  setIsCropping1(false)
-}
+    if (image1?.preview) URL.revokeObjectURL(image1.preview)
+    const preview = URL.createObjectURL(croppedFile)
+    setImage1({ file: croppedFile, preview })
+    setIsCropping1(false)
+  }
 
-const handleCropComplete2 = (croppedFile) => {
-  if (image2?.preview) URL.revokeObjectURL(image2.preview)
-  const preview = URL.createObjectURL(croppedFile)
-  setImage2({ file: croppedFile, preview })
-  setIsCropping2(false)
-}
+  const handleCropComplete2 = (croppedFile) => {
+    if (image2?.preview) URL.revokeObjectURL(image2.preview)
+    const preview = URL.createObjectURL(croppedFile)
+    setImage2({ file: croppedFile, preview })
+    setIsCropping2(false)
+  }
 
   const handleCompare = async () => {
     if (!image1 || !image2) return
-
     setIsComparing(true)
     setResult(null)
 
-    const response = await compareFaces(image1.file, image2.file)
+    const response = await compareFaces(image1.file, image2.file, compareMethod)
 
     if (response.success) {
       setResult(response.data)
@@ -115,161 +111,76 @@ const handleCropComplete2 = (croppedFile) => {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* GIỚI THIỆU */}
         <div className="text-center">
           <h2 className="text-3xl font-bold text-gray-900 mb-4">So sánh độ giống nhau giữa hai khuôn mặt</h2>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Sử dụng công nghệ AI tiên tiến để phân tích và so sánh độ tương đồng giữa hai khuôn mặt.
+            Sử dụng công nghệ AI tiên tiến để phân tích và so sánh độ tương đồng giữa hai khuôn mặt hoặc quan hệ huyết thống.
           </p>
         </div>
 
-        {/* HƯỚNG DẪN + ƯU ĐIỂM */}
-<div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-12 mb-12">
-  {/* Card Hướng dẫn sử dụng */}
-  <Card className="p-6 flex flex-col h-full shadow-sm">
-    <CardHeader>
-      <CardTitle className="text-lg">Hướng dẫn sử dụng</CardTitle>
-      <CardDescription className="text-xs mt-1 text-gray-500">
-        Các bước để sử dụng hệ thống so sánh khuôn mặt
-      </CardDescription>
-    </CardHeader>
-    <CardContent className="pt-0 flex-1 flex flex-col justify-center">
-      <ol className="list-decimal list-inside space-y-2 text-base text-gray-700">
-        <li>Chọn hoặc chụp 2 ảnh khuôn mặt rõ nét.</li>
-        <li>Có thể crop lại ảnh nếu cần thiết.</li>
-        <li>Nhấn <span className="font-semibold">“So sánh khuôn mặt”</span>.</li>
-        <li>Chờ vài giây để hệ thống phân tích.</li>
-        <li>Kết quả sẽ hiển thị bên dưới.</li>
-      </ol>
-      <div className="mt-4 text-xs text-gray-400">
-        * Ảnh không được lưu hoặc gửi đi, đảm bảo bảo mật.
-      </div>
-    </CardContent>
-  </Card>
-
-  {/* Card Ưu điểm */}
-  <Card className="p-6 flex flex-col h-full shadow-sm">
-    <CardHeader>
-      <CardTitle className="text-lg">Ưu điểm nổi bật</CardTitle>
-      <CardDescription className="text-xs mt-1 text-gray-500">
-        Lý do nên sử dụng FaceMatch AI
-      </CardDescription>
-    </CardHeader>
-    <CardContent className="pt-0 flex-1 flex flex-col justify-center">
-      <div className="space-y-5">
-        {[
-          ["Nhanh chóng", Zap, "Phân tích chỉ trong vài giây."],
-          ["Bảo mật", Shield, "Xử lý cục bộ, không lưu server."],
-          ["Chính xác", CheckCircle, "Thuật toán AI độ chính xác trên 95%."]
-        ].map(([title, Icon, desc], i) => (
-          <div key={i} className="flex items-center gap-3">
-            <div className="bg-blue-100 p-2 rounded-full">
-              <Icon className="w-6 h-6 text-blue-600" />
-            </div>
-            <div>
-              <div className="font-medium text-base">{title}</div>
-              <div className="text-xs text-gray-500">{desc}</div>
-            </div>
+        {/* PHƯƠNG PHÁP SO SÁNH */}
+        <div className="text-center mb-6 mt-6">
+          <div className="inline-flex items-center space-x-4">
+            <label className="font-medium text-gray-700">Chế độ so sánh:</label>
+            <select
+              value={compareMethod}
+              onChange={(e) => setCompareMethod(e.target.value)}
+              className="border border-gray-300 rounded px-3 py-1 text-sm focus:outline-none"
+            >
+              <option value="face">Độ giống khuôn mặt (DeepFace)</option>
+              <option value="kinship">Quan hệ huyết thống (Kinship)</option>
+            </select>
           </div>
-        ))}
-      </div>
-    </CardContent>
-  </Card>
-</div>
-        {/* ƯU ĐIỂM
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-          {[["Nhanh chóng", Zap, "Phân tích chỉ vài giây"],
-            ["Bảo mật", Shield, "Xử lý cục bộ, không lưu server"],
-            ["Chính xác", CheckCircle, "Thuật toán AI trên 95%"]].map(([title, Icon, desc], i) => (
-              <Card key={i}>
-                <CardHeader className="text-center">
-                  <Icon className="h-8 w-8 mx-auto mb-2 text-blue-600" />
-                  <CardTitle className="text-lg">{title}</CardTitle>
-                </CardHeader>
-                <CardContent><p className="text-sm text-gray-600 text-center">{desc}</p></CardContent>
-              </Card>
-          ))}
-        </div> */}
-
-        {/* UPLOAD + CROP */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-          {/* ẢNH 1 */}
-          <Card>
-  <CardHeader>
-    <CardTitle className="flex items-center space-x-2">
-      <Camera className="h-5 w-5" />
-      <span>Hình ảnh thứ nhất</span>
-    </CardTitle>
-    <CardDescription>Tải lên hình ảnh đầu tiên để so sánh</CardDescription>
-  </CardHeader>
-
-  <CardContent>
-    {isCropping1 && image1?.preview ? (
-      <ImageCropper
-        imageSrc={image1.preview}
-        onCropComplete={handleCropComplete1}
-        onCancel={() => setIsCropping1(false)}
-      />
-    ) : (
-      <>
-        <ImageUpload
-          onImageUpload={(file) => handleImageUpload(1, file)}
-          onRemoveImage={() => handleRemoveImage(1)}
-          uploadedImage={image1}
-          placeholder="Tải lên hình ảnh thứ nhất"
-        />
-        {image1 && (
-          <div className="mt-3">
-            <Button variant="secondary" onClick={() => setIsCropping1(true)}>
-              <Scissors className="w-4 h-4 mr-2" /> Crop ảnh
-            </Button>
-          </div>
-        )}
-      </>
-    )}
-  </CardContent>
-</Card>
-
-
-          {/* ẢNH 2 */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <Camera className="h-5 w-5" />
-                <span>Hình ảnh thứ hai</span>
-              </CardTitle>
-              <CardDescription>Tải lên hình ảnh thứ hai để so sánh</CardDescription>
-            </CardHeader>
-
-            <CardContent>
-              {isCropping2 && image2?.preview ? (
-                <ImageCropper
-                  imageSrc={image2.preview}
-                  onCropComplete={handleCropComplete2}
-                  onCancel={() => setIsCropping2(false)}
-                />
-              ) : (
-                <>
-                  <ImageUpload
-                    onImageUpload={(file) => handleImageUpload(2, file)}
-                    onRemoveImage={() => handleRemoveImage(2)}
-                    uploadedImage={image2}
-                    placeholder="Tải lên hình ảnh thứ hai"
-                  />
-                  {image2 && (
-                    <div className="mt-3">
-                      <Button variant="secondary" onClick={() => setIsCropping2(true)}>
-                        <Scissors className="w-4 h-4 mr-2" /> Crop ảnh
-                      </Button>
-                    </div>
-                  )}
-                </>
-              )}
-            </CardContent>
-          </Card>
         </div>
 
-        {/* BUTTON COMPARE */}
+        {/* IMAGE UPLOAD */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+          {[1, 2].map((index) => {
+            const image = index === 1 ? image1 : image2
+            const isCropping = index === 1 ? isCropping1 : isCropping2
+            const setIsCropping = index === 1 ? setIsCropping1 : setIsCropping2
+            const handleCrop = index === 1 ? handleCropComplete1 : handleCropComplete2
+
+            return (
+              <Card key={index}>
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <Camera className="h-5 w-5" />
+                    <span>Hình ảnh thứ {index}</span>
+                  </CardTitle>
+                  <CardDescription>Tải lên hình ảnh thứ {index} để so sánh</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {isCropping && image?.preview ? (
+                    <ImageCropper
+                      imageSrc={image.preview}
+                      onCropComplete={handleCrop}
+                      onCancel={() => setIsCropping(false)}
+                    />
+                  ) : (
+                    <>
+                      <ImageUpload
+                        onImageUpload={(file) => handleImageUpload(index, file)}
+                        onRemoveImage={() => handleRemoveImage(index)}
+                        uploadedImage={image}
+                        placeholder={`Tải lên hình ảnh thứ ${index}`}
+                      />
+                      {image && (
+                        <div className="mt-3">
+                          <Button variant="secondary" onClick={() => setIsCropping(true)}>
+                            <Scissors className="w-4 h-4 mr-2" /> Crop ảnh
+                          </Button>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </CardContent>
+              </Card>
+            )
+          })}
+        </div>
+
+        {/* NÚT SO SÁNH */}
         <div className="text-center mb-8">
           <Button
             onClick={handleCompare}
@@ -291,56 +202,30 @@ const handleCropComplete2 = (croppedFile) => {
           </Button>
         </div>
 
-        {/* ĐANG PHÂN TÍCH */}
+        {/* PHÂN TÍCH */}
         {isComparing && (
           <Card className="mb-8">
             <CardContent className="pt-6 space-y-4 text-center">
-              <h3 className="text-lg font-semibold">Đang phân tích khuôn mặt...</h3>
+              <h3 className="text-lg font-semibold">Đang phân tích...</h3>
               <Progress value={66} className="w-full" />
-              <p className="text-xs text-gray-500">Đang sử dụng AI để phân tích các đặc điểm khuôn mặt</p>
+              <p className="text-xs text-gray-500">Sử dụng AI để phân tích đặc điểm khuôn mặt</p>
             </CardContent>
           </Card>
         )}
 
-        
-
-        {/* HƯỚNG DẪN
-        <Card className="mt-12">
-          <CardHeader><CardTitle>Hướng dẫn sử dụng</CardTitle></CardHeader>
-          <CardContent>
-            <div className="grid md:grid-cols-2 gap-6 text-sm text-gray-600">
-              <div>
-                <h4 className="font-semibold mb-2">Yêu cầu hình ảnh:</h4>
-                <ul className="space-y-1 list-disc list-inside">
-                  <li>Định dạng: PNG, JPG, JPEG</li>
-                  <li>Kích thước tối đa: 10MB</li>
-                  <li>Khuôn mặt rõ nét, không bị che khuất</li>
-                  <li>Ánh sáng đầy đủ, không quá tối</li>
-                </ul>
-              </div>
-              <div>
-                <h4 className="font-semibold mb-2">Cách thức hoạt động:</h4>
-                <ul className="space-y-1 list-disc list-inside">
-                  <li>Phân tích đặc điểm khuôn mặt</li>
-                  <li>So sánh độ tương đồng</li>
-                  <li>Đưa ra kết luận dựa vào AI</li>
-                  <li>Độ chính xác {">"} 95%</li>
-                </ul>
-              </div>
-            </div>
-          </CardContent>
-        </Card> */}
-
-          {/* Card Kết quả */}
-  {result && (
-    <div ref={resultRef}>
-      <Card className="p-4">
-        <CardContent className="pt-0">
-          <ComparisonResult result={result} />
-        </CardContent>
-      </Card>
-    </div>
-  )}
+        {/* KẾT QUẢ */}
+        {result && (
+          <div ref={resultRef}>
+            <Card className="p-4">
+              <CardContent className="pt-0">
+                <div className="text-sm text-gray-500 italic mb-2">
+                  Phương pháp: {compareMethod === "kinship" ? "Quan hệ huyết thống (Kinship)" : "So sánh khuôn mặt (DeepFace)"}
+                </div>
+                <ComparisonResult result={result} />
+              </CardContent>
+            </Card>
+          </div>
+        )}
       </main>
 
       <footer className="bg-white border-t mt-8">

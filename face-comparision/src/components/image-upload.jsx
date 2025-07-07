@@ -62,8 +62,6 @@ export default function ImageUpload({ onImageUpload, uploadedImage, placeholder,
     if (fileInputRef.current) fileInputRef.current.value = ""
   }
 
-  console.log("showCamera:", showCamera, "uploadedImage:", uploadedImage);
-
   return (
     <div className="space-y-4">
       {showCamera ? (
